@@ -1,3 +1,4 @@
+
 // ARQUIVO PRINCIPAL DO FIREBASE (CLIENTE E SERVIDOR)
 //
 // Propósito:
@@ -14,6 +15,7 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 // Esta função agora pode ser usada tanto no servidor quanto no cliente.
 export function getSdks() {
@@ -42,3 +44,5 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+export * from './use-user';
+export const useMemoFirebase = useMemo;
