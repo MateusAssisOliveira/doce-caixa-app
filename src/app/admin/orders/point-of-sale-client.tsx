@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Terminal, PlusCircle, Trash2, Search, Eye, Printer, Pencil, Loader } from "lucide-react";
-import { updateOrderStatus, addOrder } from "@/services";
+import { updateOrderStatus, addOrder, getProducts } from "@/services";
 import type { Order, OrderStatus, Product, OrderItem } from "@/types";
 import { OrderReceipt } from "@/components/admin/order-receipt";
 import { Badge } from "@/components/ui/badge";
@@ -62,11 +62,7 @@ const getStatusVariant = (status: OrderStatus) => {
   }
 };
 
-type PointOfSaleClientProps = {
-    products: Product[];
-}
-
-export function PointOfSaleClient({ products }: PointOfSaleClientProps) {
+export function PointOfSaleClient() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -74,6 +70,10 @@ export function PointOfSaleClient({ products }: PointOfSaleClientProps) {
   const firestore = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  
+  // State for products
+  const [products, setProducts] = useState<Product[]>([]);
+  const [areProductsLoading, setAreProductsLoading] = useState(true);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -81,6 +81,25 @@ export function PointOfSaleClient({ products }: PointOfSaleClientProps) {
     }
   }, [isUserLoading, user, auth]);
   
+  useEffect(() => {
+      if (!firestore || !user) return;
+      
+      const fetchProducts = async () => {
+          try {
+              setAreProductsLoading(true);
+              const productList = await getProducts(firestore);
+              setProducts(productList);
+          } catch (error) {
+              console.error("Error fetching products: ", error);
+              toast({ variant: "destructive", title: "Erro ao buscar produtos", description: "Não foi possível carregar a lista de produtos." });
+          } finally {
+              setAreProductsLoading(false);
+          }
+      };
+      
+      fetchProducts();
+  }, [firestore, user, toast]);
+
   const ordersQuery = useMemoFirebase(() => {
       if (!firestore || !user) return null;
       return query(collection(firestore, 'orders'), orderBy('createdAt', 'desc'));
@@ -180,7 +199,6 @@ export function PointOfSaleClient({ products }: PointOfSaleClientProps) {
     }
   };
 
-
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -202,18 +220,24 @@ export function PointOfSaleClient({ products }: PointOfSaleClientProps) {
                   />
                 </div>
                  <ScrollArea className="h-48 border rounded-md">
-                    <Table>
-                        <TableBody>
-                        {filteredProducts.map((product) => (
-                            <TableRow key={product.id} onClick={() => addProductToOrder(product)} className="cursor-pointer">
-                                <TableCell className="py-2">{product.name}</TableCell>
-                                <TableCell className="text-right py-2">
-                                     <PlusCircle className="h-4 w-4 text-muted-foreground" />
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
+                    {areProductsLoading ? (
+                        <div className="flex h-full items-center justify-center">
+                            <Loader className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableBody>
+                            {filteredProducts.map((product) => (
+                                <TableRow key={product.id} onClick={() => addProductToOrder(product)} className="cursor-pointer">
+                                    <TableCell className="py-2">{product.name}</TableCell>
+                                    <TableCell className="text-right py-2">
+                                         <PlusCircle className="h-4 w-4 text-muted-foreground" />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </ScrollArea>
                 <Separator />
                 <ScrollArea className="h-40">
