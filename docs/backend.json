@@ -1,0 +1,641 @@
+
+{
+  "entities": {
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a product sold by the bakery.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the product."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the product."
+        },
+        "price": {
+          "type": "number",
+          "description": "Selling price of the product."
+        },
+        "costPrice": {
+          "type": "number",
+          "description": "Cost price of the product, often calculated from a technical sheet."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category the product belongs to."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the product's image.",
+          "format": "uri"
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "Current quantity of the product in stock."
+        },
+        "minStock": {
+          "type": "number",
+          "description": "Minimum stock level before a reorder alert is triggered."
+        },
+        "isAvailable": {
+          "type": "boolean",
+          "description": "Indicates if the product is currently available for sale."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the product is active and should be displayed."
+        },
+        "technicalSheetId": {
+          "type": "string",
+          "description": "Optional reference to a TechnicalSheet entity. (Relationship: TechnicalSheet 1:1 Product)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the product was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price"
+      ]
+    },
+    "CashRegister": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CashRegister",
+      "type": "object",
+      "description": "Represents a cash register session, tracking opening and closing balances.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the cash register session."
+        },
+        "openingDate": {
+          "type": "string",
+          "description": "Timestamp of when the cash register was opened.",
+          "format": "date-time"
+        },
+        "closingDate": {
+          "type": "string",
+          "description": "Timestamp of when the cash register was closed.",
+          "format": "date-time"
+        },
+        "initialBalance": {
+          "type": "number",
+          "description": "Initial balance of the cash register when opened."
+        },
+        "finalBalance": {
+          "type": "number",
+          "description": "Final balance of the cash register when closed."
+        },
+        "totalSales": {
+          "type": "number",
+          "description": "Total sales recorded during the cash register session."
+        },
+        "totalExpenses": {
+          "type": "number",
+          "description": "Total expenses recorded during the cash register session."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the cash register (open/closed)."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N CashRegister)"
+        }
+      },
+      "required": [
+        "id",
+        "openingDate",
+        "initialBalance",
+        "userId"
+      ]
+    },
+    "FinancialMovement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FinancialMovement",
+      "type": "object",
+      "description": "Represents a financial transaction (income or expense) within a cash register session.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the financial movement."
+        },
+        "cashRegisterId": {
+          "type": "string",
+          "description": "Reference to CashRegister. (Relationship: CashRegister 1:N FinancialMovement)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of financial movement (income/expense)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the financial movement (sale, supplier payment, etc.)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the financial movement."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the financial movement."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the transaction (cash, card, transfer)."
+        },
+        "movementDate": {
+          "type": "string",
+          "description": "Timestamp of when the financial movement occurred.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "cashRegisterId",
+        "type",
+        "category",
+        "description",
+        "amount"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "orderNumber": {
+          "type": "string",
+          "description": "Unique order number."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Name of the customer who placed the order."
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "Email address of the customer.",
+          "format": "email"
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Phone number of the customer."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total amount of the order."
+        },
+        "totalCost": {
+          "type": "number",
+          "description": "Total cost of the products in the order."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the order (pending, processing, completed, cancelled)."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the order."
+        },
+        "cashRegisterId": {
+          "type": "string",
+          "description": "Reference to CashRegister. (Relationship: CashRegister 1:N Order)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the order was placed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "orderNumber",
+        "totalAmount"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents an item within an order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order item."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to Order. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the product in the order item."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Price of one unit of the product in the order item."
+        },
+        "unitCost": {
+          "type": "number",
+          "description": "Cost of one unit of the product in the order item."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "quantity",
+        "unitPrice"
+      ]
+    },
+    "FinancialCategory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FinancialCategory",
+      "type": "object",
+      "description": "Represents a category for financial movements (income or expense).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the financial category."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the financial category."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of financial category (income/expense)."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the financial category is currently active."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application (e.g., administrator, employee).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user (e.g., administrator, cashier)."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "fullName",
+        "role"
+      ]
+    },
+    "Supply": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Supply",
+      "type": "object",
+      "description": "Represents a raw material or supply item used in the bakery.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the supply item."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the supply item."
+        },
+        "sku": {
+          "type": "string",
+          "description": "Custom identifier or SKU for the supply item."
+        },
+        "stock": {
+          "type": "number",
+          "description": "Current quantity in stock."
+        },
+        "minStock": {
+          "type": "number",
+          "description": "Minimum desired stock level."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement (e.g., 'kg', 'L', 'un')."
+        },
+        "costPerUnit": {
+          "type": "number",
+          "description": "Cost per single unit of the supply."
+        },
+        "supplier": {
+          "type": "string",
+          "description": "Name of the supplier."
+        },
+        "lastPurchaseDate": {
+          "type": "string",
+          "description": "Date of the last purchase.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the supply is active and should be displayed."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the supply item was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "stock",
+        "unit",
+        "costPerUnit"
+      ]
+    },
+    "TechnicalSheet": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TechnicalSheet",
+      "type": "object",
+      "description": "Represents a technical sheet for a base preparation or a final product assembly.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the technical sheet."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the sheet (e.g., 'Massa de Chocolate', 'Bolo de Pote de Morango')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the preparation or product."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["base", "final"],
+          "description": "Defines if the sheet is a base preparation or a final product assembly."
+        },
+        "components": {
+          "type": "array",
+          "description": "List of components that make up this sheet.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "componentId": {
+                "type": "string",
+                "description": "ID of the component, which can be a Supply or another TechnicalSheet."
+              },
+              "componentName": {
+                "type": "string",
+                "description": "Name of the component, for display purposes."
+              },
+              "componentType": {
+                "type": "string",
+                "enum": ["supply", "sheet"],
+                "description": "Type of the component."
+              },
+              "quantity": {
+                "type": "number",
+                "description": "Quantity of the component used."
+              },
+              "unit": {
+                "type": "string",
+                "description": "Unit of measurement for the quantity (e.g., 'g', 'ml', 'un')."
+              }
+            },
+            "required": ["componentId", "componentName", "componentType", "quantity", "unit"]
+          }
+        },
+        "steps": {
+          "type": "string",
+          "description": "Instructions for preparation or assembly."
+        },
+        "yield": {
+          "type": "string",
+          "description": "The final yield of the sheet (e.g., '1200g', '10 potes', '1 bolo de 2kg')."
+        },
+        "totalCost": {
+          "type": "number",
+          "description": "Total calculated cost of all components."
+        },
+        "suggestedPrice": {
+          "type": "number",
+          "description": "Suggested selling price based on total cost and markup."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the sheet is active and can be used."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the sheet was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "components",
+        "yield",
+        "totalCost"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores product information.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier for the product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/cash_registers/{cashRegisterId}",
+        "definition": {
+          "entityName": "CashRegister",
+          "schema": {
+            "$ref": "#/backend/entities/CashRegister"
+          },
+          "description": "Stores cash register sessions for each user. Establishes ownership and enables straightforward security rules based on the user ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "cashRegisterId",
+              "description": "The unique identifier for the cash register session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/cash_registers/{cashRegisterId}/financial_movements/{financialMovementId}",
+        "definition": {
+          "entityName": "FinancialMovement",
+          "schema": {
+            "$ref": "#/backend/entities/FinancialMovement"
+          },
+          "description": "Stores financial movements associated with a cash register session. Nested under cash register sessions, reinforcing the ownership hierarchy.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "cashRegisterId",
+              "description": "The unique identifier for the cash register session."
+            },
+            {
+              "name": "financialMovementId",
+              "description": "The unique identifier for the financial movement."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores order information, including a reference to the cash register ID.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}/order_items/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Stores items within an order. Nested under orders.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier for the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/financial_categories/{financialCategoryId}",
+        "definition": {
+          "entityName": "FinancialCategory",
+          "schema": {
+            "$ref": "#/backend/entities/FinancialCategory"
+          },
+          "description": "Stores financial categories.",
+          "params": [
+            {
+              "name": "financialCategoryId",
+              "description": "The unique identifier for the financial category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/supplies/{supplyId}",
+        "definition": {
+          "entityName": "Supply",
+          "schema": {
+            "$ref": "#/backend/entities/Supply"
+          },
+          "description": "Stores raw materials and supply items.",
+          "params": [
+            {
+              "name": "supplyId",
+              "description": "The unique identifier for the supply."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/technical_sheets/{sheetId}",
+        "definition": {
+          "entityName": "TechnicalSheet",
+          "schema": {
+            "$ref": "#/backend/entities/TechnicalSheet"
+          },
+          "description": "Stores technical sheets for preparations and final products.",
+          "params": [
+            {
+              "name": "sheetId",
+              "description": "The unique identifier for the technical sheet."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the features of the bakery application, including product catalog, order management, and financial tracking. The structure is updated to replace 'Recipe' with a more flexible 'TechnicalSheet' entity. This allows for creating base preparations (e.g., doughs, creams) and final product assemblies that can be composed of both supplies and other base preparations, enabling a cascading cost calculation system. Collections are kept at the top level for simplicity and scalability, with user-specific data nested for security."
+  }
+}

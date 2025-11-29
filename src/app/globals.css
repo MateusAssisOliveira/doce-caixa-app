@@ -1,0 +1,142 @@
+/**
+ * ARQUIVO DE ESTILOS GLOBAIS (CSS)
+ *
+ * Propósito:
+ * Este arquivo define os estilos globais e as variáveis de tema para toda a aplicação
+ * usando a sintaxe do Tailwind CSS.
+ *
+ * Responsabilidade:
+ * - Importar as camadas base do Tailwind (@tailwind base, @tailwind components, @tailwind utilities).
+ * - Definir variáveis CSS para os temas de cores da aplicação (tema principal e tema do admin).
+ *   Isso permite uma fácil customização da aparência do app.
+ * - Aplicar estilos globais a elementos base como `body`, `h1`, `h2`, etc.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.hero-background {
+  background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--primary) / 0.1) 100%);
+}
+
+.menu-hero-background {
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary)) 100%);
+}
+
+
+@layer base {
+  :root {
+    --background: 40 100% 98%; /* secondary-cream */
+    --foreground: 25 58% 30%; /* sweet-dark (adjusted) */
+    --card: 0 0% 100%;
+    --card-foreground: 25 58% 30%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 58% 30%;
+
+    --primary: 345 75% 85%; /* primary-pink */
+    --primary-foreground: 345 90% 25%;
+
+    --secondary: 40 100% 98%; /* secondary-cream */
+    --secondary-foreground: 25 58% 30%;
+    
+    --muted: 216 12% 94%;
+    --muted-foreground: 216 8% 45%;
+
+    --accent: 30 100% 97%;
+    --accent-foreground: 25 58% 40%; /* accent-chocolate */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 345 75% 90%;
+    --input: 345 75% 92%;
+    --ring: 336 81% 60%;
+    
+    --chart-1: 336 81% 60%;
+    --chart-2: 25 58% 40%;
+    --chart-3: 190 70% 65%;
+    --chart-4: 280 70% 65%;
+    --chart-5: 50 70% 65%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  .theme-admin {
+    --background: 220 20% 98%; /* Light Gray-Blue */
+    --foreground: 220 10% 20%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 20%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 20%;
+    
+    --primary: 340 60% 60%; /* Deeper Pink */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 10% 25%;
+
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 220 20% 96%;
+    --accent-foreground: 220 15% 30%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 340 60% 55%;
+
+    --chart-1: 340 60% 60%;
+    --chart-2: 210 70% 65%;
+    --chart-3: 160 70% 55%;
+    --chart-4: 280 60% 65%;
+    --chart-5: 40 70% 60%;
+
+    --sidebar-background: 20 14% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 345 80% 80%;
+    --sidebar-primary-foreground: 345 90% 25%;
+    --sidebar-accent: 20 10% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 20 10% 25%;
+    --sidebar-ring: 345 80% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+}

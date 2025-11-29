@@ -1,0 +1,210 @@
+/**
+ * # Firestore Security Rules
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a security model that distinguishes between globally accessible business data and private, user-owned data. The primary goal is to ensure that while authenticated employees can manage shared resources like products and orders, a user's financial data (like cash register sessions) remains strictly accessible only to them. This provides a secure foundation for rapid application prototyping.
+ *
+ * ## Data Structure
+ * The data is organized into several top-level collections for shared business data and a nested, user-specific structure for private data:
+ * - `/products/{productId}`: A global catalog of all products.
+ * - `/orders/{orderId}`: A global collection of all customer orders.
+ * - `/financial_categories/{financialCategoryId}`: Global categories for financial transactions.
+ * - `/supplies/{supplyId}`: A global catalog of all raw materials and supplies.
+ * - `/technical_sheets/{sheetId}`: A global collection of all technical sheets (recipes, assemblies).
+ * - `/users/{userId}/cash_registers/{cashRegisterId}`: A user-specific collection where each user manages their own cash register sessions. This hierarchical structure is key to the ownership model.
+ *
+ * ## Key Security Decisions
+ * - **User Data Privacy**: All data under `/users/{userId}` is strictly controlled. A user can only access documents where their UID matches the `{userId}` in the path. This prevents users from seeing or modifying each other's financial records.
+ * - **Authenticated Access for Global Data**: For shared collections like `/products`, `/orders`, and `/supplies`, any authenticated user (assumed to be an employee) is granted read and write access. This facilitates collaborative management in a trusted environment during prototyping. This can be tightened later by introducing a role-based system.
+ * - **No Public Access**: Unauthenticated access is denied for all collections. All users must be signed in to interact with the application data.
+ * - **Data Shape Flexibility**: In line with the prototyping philosophy, these rules do not validate the specific fields or data types of documents. Validation is focused solely on user identity, ownership, and critical relational links (e.g., ensuring a `userId` in a document matches the `userId` in the path).
+ *
+ * ## Denormalization for Authorization
+ * The rules leverage the data structure for efficient authorization. By placing user-specific data under `/users/{userId}`, we can use fast, path-based security checks (`isOwner(userId)`) without needing to perform costly `get()` or `exists()` calls to other documents just to verify ownership.
+ *
+ * ## Structural Segregation
+ * This ruleset uses structural segregation effectively by separating user-private data (`/users/{userId}/cash_registers`) from global business data (`/products`, `/orders`, `/supplies`). This is more secure and performant than mixing data types in a single collection.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Helper Functions
+    // ---------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's ID matches the provided userId.
+     * This is the core function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Ensures an existing document is being targeted.
+     * CRITICAL for all update and delete operations to prevent unintended side effects.
+     */
+    function documentExists() {
+      return resource != null;
+    }
+
+    /**
+     * Combines ownership and existence checks for secure updates and deletes.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && documentExists();
+    }
+
+    // ---------------------------------------------------------------------
+    // Collection Rules
+    // ---------------------------------------------------------------------
+
+    /**
+     * @description Manages the bakery's product catalog. Assumes all authenticated
+     *              users are employees who can manage products.
+     * @path /products/{productId}
+     * @allow (get) An employee views a specific product's details. auth.uid = "employee_abc"
+     * @deny (create) An unauthenticated user tries to add a new product. auth = null
+     * @principle Grants full read/write access to any authenticated user, treating them as trusted internal staff.
+     */
+    match /products/{productId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && documentExists();
+      allow delete: if isSignedIn() && documentExists();
+    }
+
+    /**
+     * @description Manages the bakery's raw material supplies. Assumes all authenticated
+     *              users are employees who can manage the inventory.
+     * @path /supplies/{supplyId}
+     * @allow (list) An employee lists all available supplies for inventory check. auth.uid = "employee_abc"
+     * @deny (delete) An unauthenticated user tries to delete a supply item. auth = null
+     * @principle Grants full read/write access to any authenticated user for managing shared inventory.
+     */
+    match /supplies/{supplyId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && documentExists();
+      allow delete: if isSignedIn() && documentExists();
+    }
+
+    /**
+     * @description Manages financial categories. Assumes all authenticated users are
+     *              employees who can manage this shared configuration data.
+     * @path /financial_categories/{financialCategoryId}
+     * @allow (list) An employee lists all available financial categories. auth.uid = "employee_abc"
+     * @deny (update) An unauthenticated user tries to change a category. auth = null
+     * @principle Grants full read/write access to any authenticated user for shared application configuration.
+     */
+    match /financial_categories/{financialCategoryId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && documentExists();
+      allow delete: if isSignedIn() && documentExists();
+    }
+    
+    /**
+     * @description Manages the bakery's technical sheets (recipes, assemblies).
+     *              Assumes all authenticated users are employees who can manage them.
+     * @path /technical_sheets/{sheetId}
+     * @allow (list) An employee lists all available technical sheets. auth.uid = "employee_abc"
+     * @deny (delete) An unauthenticated user tries to delete a sheet. auth = null
+     * @principle Grants full read/write access to any authenticated user for managing shared technical sheets.
+     */
+    match /technical_sheets/{sheetId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && documentExists();
+      allow delete: if isSignedIn() && documentExists();
+    }
+
+    /**
+     * @description Manages customer orders. Assumes all authenticated users are
+     *              employees who can create, view, and manage orders.
+     * @path /orders/{orderId}
+     * @allow (create) An employee creates a new customer order. auth.uid = "employee_abc"
+     * @deny (delete) An unauthenticated user tries to delete an order. auth = null
+     * @principle Grants full read/write access to any authenticated user, enabling collaborative order management.
+     */
+    match /orders/{orderId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && documentExists();
+      allow delete: if isSignedIn() && documentExists();
+    }
+
+    /**
+     * @description Manages the items within a specific order. Access is inherited
+     *              from the parent order.
+     * @path /orders/{orderId}/order_items/{orderItemId}
+     * @allow (create) An employee adds an item to an existing order. auth.uid = "employee_abc"
+     * @deny (create) An employee tries to add an item to a non-existent order.
+     * @principle Enforces relational integrity by ensuring order items can only be managed within an existing parent order.
+     */
+    match /orders/{orderId}/order_items/{orderItemId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && exists(/databases/$(database)/documents/orders/$(orderId));
+      allow update: if isSignedIn() && documentExists() && exists(/databases/$(database)/documents/orders/$(orderId));
+      allow delete: if isSignedIn() && documentExists() && exists(/databases/$(database)/documents/orders/$(orderId));
+    }
+
+    /**
+     * @description A user's private data, including their cash register sessions.
+     *              Access is strictly limited to the data owner.
+     * @path /users/{userId}
+     * @principle Establishes the root of the user-owned data tree. Rules on subcollections will inherit this ownership model.
+     */
+    match /users/{userId} {
+      // This match block itself grants no permissions. It serves as a namespace
+      // for the nested collections below, which define their own specific rules.
+      allow read, write: if false;
+
+      /**
+       * @description Manages a user's cash register sessions. Only the user can
+       *              create, view, update, or delete their own sessions.
+       * @path /users/{userId}/cash_registers/{cashRegisterId}
+       * @allow (create) A user starts a new cash register session. auth.uid = "{userId}"
+       * @deny (get) Another user tries to view this user's cash register data. auth.uid != "{userId}"
+       * @principle Enforces strict data ownership using the user's ID from the document path.
+       */
+      match /cash_registers/{cashRegisterId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages financial movements within a user's cash register session.
+       *              Access is inherited from the parent user document.
+       * @path /users/{userId}/cash_registers/{cashRegisterId}/financial_movements/{financialMovementId}
+       * @allow (create) A user adds a new expense to their open cash register. auth.uid = "{userId}"
+       * @deny (list) Another user tries to list financial movements from this session. auth.uid != "{userId}"
+       * @principle Inherits ownership from the top-level user path and ensures relational integrity with the parent cash register.
+       */
+      match /cash_registers/{cashRegisterId}/financial_movements/{financialMovementId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && exists(/databases/$(database)/documents/users/$(userId)/cash_registers/$(cashRegisterId)) && request.resource.data.cashRegisterId == cashRegisterId;
+        allow update: if isExistingOwner(userId) && request.resource.data.cashRegisterId == resource.data.cashRegisterId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+  }
+}
